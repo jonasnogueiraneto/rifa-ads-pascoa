@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Visualização da Rifa</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      min-height: 100vh;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #333;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 8px;
+      max-width: 95vw;
+      width: 640px;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .cell {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      text-align: center;
+      line-height: 40px;
+      font-weight: bold;
+      border-radius: 6px;
+      color: white;
+      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cell:hover {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    .disponivel {
+      background-color: #4CAF50;
+    }
+
+    .vendido {
+      background-color: #F44336;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Status da Rifa</h2>
+  <div id="grid" class="grid"></div>
+
+  <script>
+    const csvUrl = "{{CSV_URL}}";
+
+    function parseCSV(text) {
+      const [headerLine, ...lines] = text.trim().split('\n');
+      const headers = headerLine.split(',');
+      return lines.map(line => {
+        const values = line.split(',');
+        const row = {};
+        headers.forEach((h, i) => row[h.trim()] = values[i]?.trim());
+        return row;
+      });
+    }
+
+    fetch(csvUrl)
+      .then(res => res.text())
+      .then(text => {
+        const data = parseCSV(text);
+        const grid = document.getElementById('grid');
+        data.sort((a, b) => parseInt(a["Número"]) - parseInt(b["Número"]));
+
+        data.forEach(item => {
+          const div = document.createElement('div');
+          const vendido = item["Nome"] && item["Nome"] !== "";
+          div.className = "cell " + (vendido ? "vendido" : "disponivel");
+          div.textContent = item["Número"];
+          grid.appendChild(div);
+        });
+      });
+  </script>
+
+</body>
+
+</html>
